@@ -1,0 +1,128 @@
+@startuml
+
+
+|Клиент|
+start
+:Подать заявку;
+note right
+POST/application/statement
+end note
+|Сервер|
+:запросить список документов;
+note right
+GET/application/form/statement
+end note
+
+|Клиент|
+:отправка документов;
+
+|Сервер|
+if (Документы подгружены?) then (нет)
+  |Клиент|
+  :документы не соответствуют формату;
+  note right
+  400 Bad Request error
+  end note
+  
+  repeat
+    |Клиент|
+    :Отправить документы;
+    note right
+    POST/documents/upload
+    end note
+  repeat while (Документы не полные?) is (да)
+
+  
+else (да)
+  |Сервер|
+  :отправка документов;
+endif
+
+|Сервер|
+  :проверка документов;
+  fork
+    |Сервер|
+    :Отправить документы на проверку в ГИБДД;
+  fork again
+    |Сервер|
+    :Отправить запрос в АИС на расчет КБМ;
+  end fork
+  |Сервер|
+   
+  if (ответ получен?) then (нет)
+   |Сервер|
+   : повторный запрос до 3х раз;
+   |Клиент|
+   :нет ответа;
+   note right
+   504 Gateway Time Out error
+   end note
+   end 
+  else (да)
+   |Сервер|
+   :расчет стоимости договора;
+     endif 
+
+if (стоимость страхового полиса устраивает?) then (нет)
+|Клиент|
+:отказ от заключения договора;
+ end 
+else (да)
+:подписание договора;
+endif
+|Клиент|
+:оплатить договор;
+note right
+POST/payments/initiate
+{"contractId": "123", "amount": 5000}
+end note
+
+|Сервер|
+:показывает форму оплаты;
+note right
+GET/payments/form/{paymentId}
+end note
+
+|Клиент|
+:вводит данные для оплаты;
+note right
+POST/payments/initiate
+{"cardNumber": "****", "expiry": "12/30", "cvv": "***"}
+end note
+
+|Сервер|
+if (данные карты отвечают требованиям?)  then (нет)
+|Клиент|
+:400 Bad Request неверные данные;
+end
+else (да)
+|Сервер|
+ if (на карте есть деньги?)  then (нет)
+ |Клиент|
+ :недостаточно средств;
+  note right
+  403 Forbidden error
+  end note
+ end
+ else (да)
+ |Сервер|
+ :списание средств;
+endif
+endif
+
+|Клиент|
+:договор оплачен;
+|Сервер|
+:договор заключен;
+:отправка данных в АИС;
+
+fork
+:формирование полиса в pdf;
+fork again
+:отправка полиса на email;
+end fork
+|Клиент|
+:получен полис на email;
+
+stop
+@enduml
