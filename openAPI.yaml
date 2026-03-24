@@ -1,0 +1,717 @@
+openapi: 3.0.0
+info:
+  title: Система управления страховыми продуктами
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1/
+    description: Dev server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /forms/policies:
+    get:
+      summary: Запрос формы для заполнения заявки
+      description: Возвращает форму для оформления заявки
+      tags:
+        - policies
+      operationId: getformpolicy
+      responses:
+        '200':
+          description: успешное получение формы
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/policyFormResponse" 
+        
+        '401':
+          description: требуется аутентификация
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "ошибка аутентификации" 
+                  code: 401
+                  timestamp: "2024-01-15T10:30:00"
+                
+                                
+        '403':
+          description: доступ не подтвержден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "Нет доступа к системе" 
+                  code: 403
+                  timestamp: "2024-01-15T10:30:00"
+                     
+        '404':
+          description: ресурс не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "запрашиваемый ресурс не найден на сервере"       
+                  code: 404
+                  timestamp: "2024-01-15T10:30:00"  
+
+        '408':
+          description: Таймаут запроса. Сервер не дождался завершения операции.
+          content:
+            application/json:
+             schema:
+               $ref: "#/components/schemas/error"
+             example:
+               message: "Превышено время ожидания ответа."
+               code: 408
+               timestamp: "2024-01-15T10:30:00"
+
+    post: 
+      summary: Создание заявки на полис
+      description: Создает запись о новой заявке. Требует авторизации
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      tags:
+        - policies
+      operationId: policyCreated
+      requestBody: 
+        
+        content:
+          application/json: 
+            schema: 
+              $ref: "#/components/schemas/policyCreated"
+      responses:
+        '201':
+          description: успешный создание заявки
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/policyCreatedResponse" 
+
+        '204':
+          description: Таймаут ожидания, изменений не произошло
+
+        '400':
+          description: Невалидный запрос
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "Неверный запрос"  
+                  code: 400
+                  timestamp: "2024-01-15T10:30:00"   
+        '401':
+          description: требуется аутентификация
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "ошибка аутентификации" 
+                  code: 401
+                  timestamp: "2024-01-15T10:30:00"  
+        '403':
+          description: доступ не подтвержден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "Нет доступа к созданию контента" 
+                  code: 403
+                  timestamp: "2024-01-15T10:30:00"   
+
+        '409':
+          description: запись уже создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "заявка с такими данными уже существует"
+                  code: 409
+                  timestamp: "2024-01-15T10:30:00" 
+
+        '429':
+          description: Слишком много запросов. Превышен лимит обращений к API.
+          content:
+            application/json:
+             schema:
+              $ref: "#/components/schemas/error"
+             example:
+               message: "Превышен лимит запросов. Попробуйте позже."
+               code: 429
+               timestamp: "2024-01-15T10:30:00"
+
+        '504':
+          description: Таймаут шлюза. Внешний сервис (ГИБДД, НСИС) не ответил вовремя.
+          content:
+            application/json:
+             schema:
+               $ref: "#/components/schemas/error"
+             example:
+                message: "Сервис ГИБДД не ответил в течение отведённого времени."
+                code: 504
+                timestamp: "2024-01-15T10:30:00"
+
+
+  /policies:
+    get:
+      summary: Получение списка полисов
+      description: Возвращает список полисов.    Требует авторизации
+      tags:
+        - policies
+      operationId: getpolicies
+      responses:
+        '200':
+          description: успешный ответ со списком полисов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/policiesListResponse" 
+        
+        '401':
+          description: требуется аутентификация
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "ошибка аутентификации" 
+                  code: 401
+                  timestamp: "2024-01-15T10:30:00"                    
+        '403':
+          description: доступ не подтвержден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "Нет доступа к полису" 
+                  code: 403
+                  timestamp: "2024-01-15T10:30:00"  
+        '404':
+          description: ресурс не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "запрашиваемый ресурс не найден на сервере"       
+                  code: 404
+                  timestamp: "2024-01-15T10:30:00" 
+
+  /policies/{policy_id}:
+    get:
+      summary: Получение полиса по идентификатору
+      description: Возвращает полную информацию об одном полисе.    Требует авторизации
+      tags:
+        - policies
+      operationId: getpolicybyid
+      parameters: 
+        - name: policy_id
+          in: path
+          required: true
+          description: идентификатор полиса
+          schema: 
+            type: string
+            example:  "550e8400-e29b-41d4-a716-446655440000456"
+      responses:
+        '200':
+          description: успешный ответ с одним полисом
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/policy_idResponse" 
+        
+        '401':
+          description: требуется аутентификация
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "ошибка аутентификации" 
+                  code: 401
+                  timestamp: "2024-01-15T10:30:00"                    
+        '403':
+          description: доступ не подтвержден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "Нет доступа к полису" 
+                  code: 403
+                  timestamp: "2024-01-15T10:30:00"  
+        '404':
+          description: ресурс не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "запрашиваемый ресурс не найден на сервере"       
+                  code: 404
+                  timestamp: "2024-01-15T10:30:00" 
+           
+    
+
+    patch: 
+      summary: Внесение изменений в полис
+      description: Обновляет информацию о полисе.    Требует авторизации
+      
+      tags:
+        - policies
+      operationId: updatepolicy
+      parameters: 
+        - name: policy_id
+          in: path
+          required: true
+          description: идентификатор полиса
+          schema: 
+            type: string
+            example:  "550e8400-e29b-41d4-a716-446655440000456"
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid    
+      requestBody: 
+        
+        content:
+          application/json: 
+            schema: 
+              $ref: "#/components/schemas/policyUpdate"
+      responses:
+        '200':
+          description: успешное обновление данных полиса
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/policyUpdateResponse" 
+
+        '204':
+          description: Таймаут ожидания, изменений не произошло
+
+        '400':
+          description: Невалидный запрос
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "Неверный запрос"  
+                  code: 400
+                  timestamp: "2024-01-15T10:30:00"
+        '401':
+          description: требуется аутентификация
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "ошибка аутентификации" 
+                  code: 401
+                  timestamp: "2024-01-15T10:30:00"                    
+        '403':
+          description: доступ не подтвержден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "Нет доступа к полису" 
+                  code: 403
+                  timestamp: "2024-01-15T10:30:00"  
+        '404':
+          description: ресурс не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "полис не найден"              
+                  code: 404
+                  timestamp: "2024-01-15T10:30:00"  
+
+        '409':
+          description: запись уже создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "заявка с такими данными уже существует"
+                  code: 409
+                  timestamp: "2024-01-15T10:30:00" 
+
+        '429':
+          description: Слишком много запросов. Превышен лимит обращений к API.
+          content:
+            application/json:
+             schema:
+              $ref: "#/components/schemas/error"
+             example:
+               message: "Превышен лимит запросов. Попробуйте позже."
+               code: 429
+               timestamp: "2024-01-15T10:30:00"
+
+        '504':
+          description: Таймаут шлюза. Внешний сервис (ГИБДД, НСИС) не ответил вовремя.
+          content:
+            application/json:
+             schema:
+               $ref: "#/components/schemas/error"
+             example:
+                message: "Сервис ГИБДД не ответил в течение отведённого времени."
+                code: 504
+                timestamp: "2024-01-15T10:30:00"       
+
+    delete: 
+      summary: удаление полиса по идентификатору
+      description: Удаляет информацию о полисе. Требует авторизации
+      tags:
+        - policies  
+      operationId: deletepolicy
+      parameters: 
+        - name: policy_id
+          in: path
+          required: true
+          description: идентификатор полиса
+          schema: 
+            type: string
+            example:  "550e8400-e29b-41d4-a716-446655440000456"   
+      responses:
+        '200':
+          description: успешное удаление полиса
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/policyDeleteResponse"
+        '401':
+          description: требуется аутентификация
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "ошибка аутентификации" 
+                  code: 401
+                  timestamp: "2024-01-15T10:30:00"                    
+        '403':
+          description: доступ не подтвержден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "Нет доступа к полису" 
+                  code: 403
+                  timestamp: "2024-01-15T10:30:00" 
+        '404':
+          description: ресурс не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              example:
+                  message: "полис не найден"              
+                  code: 404
+                  timestamp: "2024-01-15T10:30:00"            
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Введите JWT токен
+  schemas:
+    policy:
+      type: object
+      required:
+         - policy_id
+         - status
+         - policy_type
+         - policyholder_id
+         - drivers_list
+         - vehicle_id
+         - valid_from
+         - valid_to
+      properties:
+        policy_id:
+          type: string
+          description: уникальный идентификатор полиса
+          example: "550e8400-e29b-41d4-a716-446655440000456"
+        status:
+          type: string
+          description: статус полиса
+          example:  [draft, pending, active, expired, cancelled]
+        policy_type:
+          type: string
+          description: тип полиса
+          example: OSAGO
+        policyholder_id:
+          type: string
+          description: уникальный идентификатор страхователя
+          example: "550e8400-e29b-41d4-a716-446655440000457"
+        vehicle_id:
+          type: string
+          description: уникальный идентификатор ТС
+          example: "550e8400-e29b-41d4-a716-446655440000458"
+        drivers_list:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/driver"  
+        valid_from:
+          type: string
+          description: дата начала действия полиса
+          format: date
+          example: "2025-09-01"
+        valid_to:
+          type: string
+          description: дата окончания действия полиса 
+          format: date
+          example: "2025-09-01"
+    policyCreated:
+      type: object
+      additionalProperties: false 
+      required: [policy_id, status, policy_type, policyholder_id,  drivers_list, vehicle_id, valid_from, valid_to]
+      properties:
+        policy_id:
+          type: string
+          description: уникальный идентификатор полиса
+          example: "550e8400-e29b-41d4-a716-446655440000456"
+        status:
+          type: string
+          description: статус полиса
+          example:  [draft, pending, active, expired, cancelled]
+        policy_type:
+          type: string
+          description: тип полиса
+          example: OSAGO
+        policyholder_id:
+          type: string
+          description: уникальный идентификатор страхователя
+          example: "550e8400-e29b-41d4-a716-446655440000457"
+        drivers_list:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/driver"  
+        vehicle_id:
+          type: string
+          description: уникальный идентификатор ТС
+          example: "550e8400-e29b-41d4-a716-446655440000458"
+        valid_from:
+          type: string
+          description: дата начала действия полиса
+          format: date
+          example: "2025-09-01"
+        valid_to:
+          type: string
+          description: дата окончания действия полиса 
+          format: date
+          example: "2025-09-01"
+        created_at:
+          type: string
+          description: дата и время создания записи
+          format: date-time
+          example: "2025-09-01T15:00:00+01:00"   
+    policyUpdate: 
+      type: object
+      additionalProperties: false 
+      required: [drivers_list, update_at]
+      properties:
+        drivers_list:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/driver"  
+        update_at:
+          type: string
+          description: дата и время внесения изменений
+          format: date-time
+          example: "2025-09-01T15:00:00+01:00"   
+    policies:
+      type: array
+      items:
+        $ref: "#/components/schemas/policy"
+    driver:
+      type: object
+      required:
+        - full_name
+        - license_number
+        - birth_date
+      properties:
+        full_name:
+          type: string
+          description: ФИО водителя
+          example: "Иванов Иван Иванович"
+        license_number:
+          type: string
+          description: Номер водительского удостоверения
+          example: "99 12 345678"
+        license_issue_date:
+          type: string
+          format: date
+          description: Дата выдачи ВУ
+          example: "2020-05-15"
+        birth_date:
+          type: string
+          format: date
+          description: Дата рождения
+          example: "1985-03-10"
+        experience_years:
+          type: integer
+          description: Стаж вождения (лет)
+          example: 10
+
+    form:
+     type: object
+     properties:
+      name:
+       type: string
+       description: Имя поля 
+      type:
+       type: string
+       enum: [string, number, date, choice]
+       description: Тип поля
+      isRequired:
+       type: boolean
+       description: обязательность поля для заполнения
+      options:
+       type: array
+       items:
+        type: string
+       description: Варианты для type
+
+    error:
+      type: object
+      required: 
+        - code
+        - message
+      properties: 
+        code:
+          type: integer
+          description: код ошибки
+          example: 400 
+        message: 
+          type: integer
+          description: описание ошибки
+          example: невалидный запрос  
+        timestamp:
+           type: string
+           description: дата и время возникновения ошибки
+           format: date-time
+           example: "2025-09-01T15:00:00+01:00"
+            
+    link:
+      type: object
+      properties:
+        href:
+          type: string
+          description: URL для перехода
+        method:
+          type: string
+          enum: [GET, POST, PUT, PATCH, DELETE]
+          description: HTTP-метод
+        title:
+          type: string
+          description: название ссылки
+      required:
+        - href 
+ 
+    policyFormResponse:
+      type: object
+      properties:
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/form"
+          description: Список полей формы  
+        _links:
+          type: object
+          properties:
+            self:
+              $ref: "#/components/schemas/link"
+            policies:
+              $ref: "#/components/schemas/link"
+            submit:
+              $ref: "#/components/schemas/link"
+
+    policyCreatedResponse:
+      type: object
+      properties:
+       policy:
+          $ref: "#/components/schemas/policy"
+       _links:
+          type: object
+          properties:
+            self:
+              $ref: "#/components/schemas/link"
+            pay:
+              $ref: "#/components/schemas/link"
+            cancel:
+              $ref: "#/components/schemas/link"
+
+    policiesListResponse:
+      type: object
+      properties:
+       policy:
+          $ref: "#/components/schemas/policies"
+       _links:
+          type: object
+          properties:
+            self:
+              $ref: "#/components/schemas/link"
+            policy_id:
+              $ref: "#/components/schemas/link"   
+
+    policy_idResponse:
+      type: object
+      properties:
+       policy:
+          $ref: "#/components/schemas/policy"
+       _links:
+          type: object
+          properties:
+            self:
+              $ref: "#/components/schemas/link"
+            update:
+              $ref: "#/components/schemas/link"       
+
+    policyUpdateResponse:
+      type: object
+      properties:
+       policy:
+          $ref: "#/components/schemas/policyUpdate"
+       _links:
+          type: object
+          properties:
+            self:
+              $ref: "#/components/schemas/link"
+            policies:
+              $ref: "#/components/schemas/link"       
+
+    policyDeleteResponse:
+      type: object
+      properties:
+       _links:
+          type: object
+          properties:
+            self:
+              $ref: "#/components/schemas/link"
+            form:
+              $ref: "#/components/schemas/link"                        
