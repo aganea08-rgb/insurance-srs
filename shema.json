@@ -1,0 +1,453 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Схемы страховой системы",
+  "description": "JSON Schema для валидации запросов и ответов",
+  "type": "object",
+  "properties": {
+    {
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Введите JWT токен"
+      }
+    },
+    "schemas": {
+      "policy": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "policy_id",
+          "status",
+          "policy_type",
+          "policyholder_id",
+          "drivers_list",
+          "vehicle_id",
+          "valid_from",
+          "valid_to"
+        ],
+        "properties": {
+          "policy_id": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 36,
+            "maxLength": 36,
+            "description": "уникальный идентификатор полиса",
+            "example": "550e8400-e29b-41d4-a716-446655440000456"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "pending",
+              "active",
+              "expired",
+              "cancelled"
+            ],
+            "description": "статус полиса",
+            "example": "pending"
+          },
+          "policy_type": {
+            "type": "string",
+            "enum": [
+              "OSAGO",
+              "KASKO"
+            ],
+            "description": "тип полиса",
+            "example": "OSAGO"
+          },
+          "policyholder_id": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 36,
+            "maxLength": 36,
+            "description": "уникальный идентификатор страхователя",
+            "example": "550e8400-e29b-41d4-a716-446655440000457"
+          },
+          "vehicle_id": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 36,
+            "maxLength": 36,
+            "description": "уникальный идентификатор ТС",
+            "example": "550e8400-e29b-41d4-a716-446655440000458"
+          },
+          "drivers_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/driver"
+            }
+          },
+          "valid_from": {
+            "type": "string",
+            "description": "дата начала действия полиса",
+            "format": "date",
+            "example": "2025-09-01"
+          },
+          "valid_to": {
+            "type": "string",
+            "description": "дата окончания действия полиса",
+            "format": "date",
+            "example": "2025-09-01"
+          }
+        }
+      },
+      "policyCreated": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "policy_type",
+          "policyholder_id",
+          "drivers_list",
+          "vehicle_id",
+          "valid_from",
+          "valid_to"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "статус полиса",
+            "example": [
+              "draft",
+              "pending",
+              "active",
+              "expired",
+              "cancelled"
+            ]
+          },
+          "policy_type": {
+            "type": "string",
+            "enum": [
+              "OSAGO",
+              "KASKO"
+            ],
+            "description": "тип полиса",
+            "example": "OSAGO"
+          },
+          "policyholder_id": {
+            "type": "string",
+            "description": "уникальный идентификатор страхователя",
+            "example": "550e8400-e29b-41d4-a716-446655440000457"
+          },
+          "drivers_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/driver"
+            }
+          },
+          "vehicle_id": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 36,
+            "maxLength": 36,
+            "description": "уникальный идентификатор ТС",
+            "example": "550e8400-e29b-41d4-a716-446655440000458"
+          },
+          "valid_from": {
+            "type": "string",
+            "description": "дата начала действия полиса",
+            "format": "date",
+            "example": "2025-09-01"
+          },
+          "valid_to": {
+            "type": "string",
+            "description": "дата окончания действия полиса",
+            "format": "date",
+            "example": "2025-09-01"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "дата и время создания записи",
+            "format": "date-time",
+            "example": "2025-09-01T15:00:00+01:00"
+          }
+        }
+      },
+      "policyUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "policy_type",
+          "policyholder_id",
+          "drivers_list",
+          "vehicle_id",
+          "valid_from",
+          "valid_to"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "статус полиса",
+            "example": [
+              "draft",
+              "pending",
+              "active",
+              "expired",
+              "cancelled"
+            ]
+          },
+          "policy_type": {
+            "type": "string",
+            "enum": [
+              "OSAGO",
+              "KASKO"
+            ],
+            "description": "тип полиса",
+            "example": "OSAGO"
+          },
+          "policyholder_id": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 36,
+            "maxLength": 36,
+            "description": "уникальный идентификатор страхователя",
+            "example": "550e8400-e29b-41d4-a716-446655440000457"
+          },
+          "drivers_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/driver"
+            }
+          },
+          "vehicle_id": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 36,
+            "maxLength": 36,
+            "description": "уникальный идентификатор ТС",
+            "example": "550e8400-e29b-41d4-a716-446655440000458"
+          },
+          "valid_from": {
+            "type": "string",
+            "description": "дата начала действия полиса",
+            "format": "date",
+            "example": "2025-09-01"
+          },
+          "valid_to": {
+            "type": "string",
+            "description": "дата окончания действия полиса",
+            "format": "date",
+            "example": "2025-09-01"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "дата и время создания записи",
+            "format": "date-time",
+            "example": "2025-09-01T15:00:00+01:00"
+          }
+        }
+      },
+      "policies": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/policy"
+        }
+      },
+      "driver": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "full_name",
+          "license_number",
+          "birth_date"
+        ],
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "ФИО водителя",
+            "example": "Иванов Иван Иванович"
+          },
+          "license_number": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 12,
+            "description": "Номер водительского удостоверения",
+            "example": "99 12 345678"
+          },
+          "license_issue_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Дата выдачи ВУ",
+            "example": "2020-05-15"
+          },
+          "birth_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Дата рождения",
+            "example": "1985-03-10"
+          },
+          "experience_years": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 70,
+            "description": "Стаж вождения (лет)",
+            "example": 10
+          }
+        }
+      },
+      "error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "код ошибки",
+            "example": 400
+          },
+          "message": {
+            "type": "integer",
+            "description": "описание ошибки",
+            "example": "невалидный запрос"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "дата и время возникновения ошибки",
+            "format": "date-time",
+            "example": "2025-09-01T15:00:00+01:00"
+          }
+        }
+      },
+      "link": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "href": {
+            "type": "string",
+            "description": "URL для перехода"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "GET",
+              "POST",
+              "PUT",
+              "PATCH",
+              "DELETE"
+            ],
+            "description": "HTTP-метод"
+          },
+          "title": {
+            "type": "string",
+            "description": "название ссылки"
+          },
+          "rel": {
+            "type": "string",
+            "description": "Тип ссылки (self, next, prev, submit, pay, cancel, policies и т.д.)  Используется для идентификации ссылки в массиве"
+          }
+        },
+        "required": [
+          "href",
+          "rel"
+        ],
+        "example": [
+          {
+            "href": "/policies",
+            "method": "GET",
+            "title": "Список моих полисов",
+            "rel": "policies"
+          },
+          {
+            "href": "/policies",
+            "method": "POST",
+            "title": "Отправить заявку",
+            "rel": "submit"
+          }
+        ]
+      },
+      "policyCreatedResponse": {
+        "type": "object",
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/policy"
+          },
+          "_links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            },
+            "description": "Ссылки для навигации"
+          }
+        }
+      },
+      "policiesListResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/policies"
+            },
+            "description": "Массив полисов на текущей странице"
+          },
+          "total": {
+            "type": "integer",
+            "description": "Общее количество полисов (без учёта пагинации)",
+            "example": 150
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Количество записей на странице (копия из запроса)",
+            "example": 20
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Смещение от начала (копия из запроса)",
+            "example": 40
+          },
+          "_links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            },
+            "description": "Ссылки для навигации"
+          }
+        }
+      },
+      "policy_idResponse": {
+        "type": "object",
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/policy"
+          },
+          "_links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            },
+            "description": "Ссылки для навигации"
+          }
+        }
+      },
+      "policyUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/policyUpdate"
+          },
+          "_links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            },
+            "description": "Ссылки для навигации"
+          }
+        }
+      }
+    }
+  }
+}
+  },
+  "additionalProperties": false
+}
