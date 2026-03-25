@@ -10,66 +10,8 @@ security:
   - BearerAuth: []
 
 paths:
-  /forms/policies:
-    get:
-      summary: Запрос формы для заполнения заявки
-      description: Возвращает форму для оформления заявки
-      tags:
-        - policies
-      operationId: getformpolicy
-      responses:
-        '200':
-          description: успешное получение формы
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/policyFormResponse" 
-        
-        '401':
-          description: требуется аутентификация
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/error"
-              example:
-                  message: "ошибка аутентификации" 
-                  code: 401
-                  timestamp: "2024-01-15T10:30:00"
-                
-                                
-        '403':
-          description: доступ не подтвержден
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/error"
-              example:
-                  message: "Нет доступа к системе" 
-                  code: 403
-                  timestamp: "2024-01-15T10:30:00"
-                     
-        '404':
-          description: ресурс не найден
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/error"
-              example:
-                  message: "запрашиваемый ресурс не найден на сервере"       
-                  code: 404
-                  timestamp: "2024-01-15T10:30:00"  
-
-        '408':
-          description: Таймаут запроса. Сервер не дождался завершения операции.
-          content:
-            application/json:
-             schema:
-               $ref: "#/components/schemas/error"
-             example:
-               message: "Превышено время ожидания ответа."
-               code: 408
-               timestamp: "2024-01-15T10:30:00"
-
+  
+  /policies:
     post: 
       summary: Создание заявки на полис
       description: Создает запись о новой заявке. Требует авторизации
@@ -165,13 +107,72 @@ paths:
                 timestamp: "2024-01-15T10:30:00"
 
 
-  /policies:
     get:
       summary: Получение списка полисов
       description: Возвращает список полисов.    Требует авторизации
       tags:
         - policies
       operationId: getpolicies
+      parameters:
+        # Пагинация
+        - name: limit
+          in: query
+          description: Количество записей на странице
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Смещение от начала
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        # Сортировка
+        - name: sort
+          in: query
+          description: |
+            Поле для сортировки. Префикс `-` означает убывание.
+            Доступные поля: policy_id, created_at, valid_from, valid_to, premium
+            Пример: `sort=-created_at` — сначала новые
+          required: false
+          schema:
+            type: string
+            default: "-created_at"
+        # Фильтрация
+        - name: status
+          in: query
+          description: Фильтр по статусу полиса
+          required: false
+          schema:
+            type: string
+            enum: [draft, pending, active, expired, cancelled]
+        - name: policy_type
+          in: query
+          description: Фильтр по типу страхования
+          required: false
+          schema:
+            type: string
+            enum: [OSAGO, KASKO]
+        - name: valid_from
+          in: query
+          description: Дата начала действия (не ранее)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: valid_to
+          in: query
+          description: Дата окончания действия (не позднее)
+          required: false
+          schema:
+            type: string
+            format: date
+        
       responses:
         '200':
           description: успешный ответ со списком полисов
@@ -210,6 +211,17 @@ paths:
                   message: "запрашиваемый ресурс не найден на сервере"       
                   code: 404
                   timestamp: "2024-01-15T10:30:00" 
+
+        '504':
+          description: Таймаут шлюза. Внешний сервис (ГИБДД, НСИС) не ответил вовремя.
+          content:
+            application/json:
+             schema:
+               $ref: "#/components/schemas/error"
+             example:
+                message: "Сервис ГИБДД не ответил в течение отведённого времени."
+                code: 504
+                timestamp: "2024-01-15T10:30:00"          
 
   /policies/{policy_id}:
     get:
@@ -264,13 +276,23 @@ paths:
                   message: "запрашиваемый ресурс не найден на сервере"       
                   code: 404
                   timestamp: "2024-01-15T10:30:00" 
+
+        '504':
+          description: Таймаут шлюза. Внешний сервис (ГИБДД, НСИС) не ответил вовремя.
+          content:
+            application/json:
+             schema:
+               $ref: "#/components/schemas/error"
+             example:
+                message: "Сервис ГИБДД не ответил в течение отведённого времени."
+                code: 504
+                timestamp: "2024-01-15T10:30:00"          
            
     
 
-    patch: 
+    put: 
       summary: Внесение изменений в полис
       description: Обновляет информацию о полисе.    Требует авторизации
-      
       tags:
         - policies
       operationId: updatepolicy
@@ -282,14 +304,8 @@ paths:
           schema: 
             type: string
             example:  "550e8400-e29b-41d4-a716-446655440000456"
-        - name: Idempotency-Key
-          in: header
-          required: true
-          schema:
-            type: string
-            format: uuid    
+           
       requestBody: 
-        
         content:
           application/json: 
             schema: 
@@ -394,12 +410,9 @@ paths:
             type: string
             example:  "550e8400-e29b-41d4-a716-446655440000456"   
       responses:
-        '200':
+        '204':
           description: успешное удаление полиса
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/policyDeleteResponse"
+          
         '401':
           description: требуется аутентификация
           content:
@@ -429,7 +442,19 @@ paths:
               example:
                   message: "полис не найден"              
                   code: 404
-                  timestamp: "2024-01-15T10:30:00"            
+                  timestamp: "2024-01-15T10:30:00" 
+
+        '504':
+          description: Таймаут шлюза. Внешний сервис (ГИБДД, НСИС) не ответил вовремя.
+          content:
+            application/json:
+             schema:
+               $ref: "#/components/schemas/error"
+             example:
+                message: "Сервис ГИБДД не ответил в течение отведённого времени."
+                code: 504
+                timestamp: "2024-01-15T10:30:00"
+
 components:
   securitySchemes:
     BearerAuth:
@@ -439,6 +464,7 @@ components:
   schemas:
     policy:
       type: object
+      additionalProperties: false
       required:
          - policy_id
          - status
@@ -451,22 +477,33 @@ components:
       properties:
         policy_id:
           type: string
+          format: uuid
+          minLength: 36
+          maxLength: 36
           description: уникальный идентификатор полиса
           example: "550e8400-e29b-41d4-a716-446655440000456"
         status:
           type: string
+          enum: [draft, pending, active, expired, cancelled]
           description: статус полиса
-          example:  [draft, pending, active, expired, cancelled]
+          example:  pending
         policy_type:
           type: string
+          enum: [OSAGO, KASKO]
           description: тип полиса
           example: OSAGO
         policyholder_id:
           type: string
+          format: uuid
+          minLength: 36
+          maxLength: 36
           description: уникальный идентификатор страхователя
           example: "550e8400-e29b-41d4-a716-446655440000457"
         vehicle_id:
           type: string
+          format: uuid
+          minLength: 36
+          maxLength: 36
           description: уникальный идентификатор ТС
           example: "550e8400-e29b-41d4-a716-446655440000458"
         drivers_list:
@@ -487,18 +524,15 @@ components:
     policyCreated:
       type: object
       additionalProperties: false 
-      required: [policy_id, status, policy_type, policyholder_id,  drivers_list, vehicle_id, valid_from, valid_to]
+      required: [status, policy_type, policyholder_id,  drivers_list, vehicle_id, valid_from, valid_to]
       properties:
-        policy_id:
-          type: string
-          description: уникальный идентификатор полиса
-          example: "550e8400-e29b-41d4-a716-446655440000456"
         status:
           type: string
           description: статус полиса
           example:  [draft, pending, active, expired, cancelled]
         policy_type:
           type: string
+          enum: [OSAGO, KASKO]
           description: тип полиса
           example: OSAGO
         policyholder_id:
@@ -512,6 +546,9 @@ components:
             $ref: "#/components/schemas/driver"  
         vehicle_id:
           type: string
+          format: uuid
+          minLength: 36
+          maxLength: 36
           description: уникальный идентификатор ТС
           example: "550e8400-e29b-41d4-a716-446655440000458"
         valid_from:
@@ -532,16 +569,49 @@ components:
     policyUpdate: 
       type: object
       additionalProperties: false 
-      required: [drivers_list, update_at]
+      required: [status, policy_type, policyholder_id,  drivers_list, vehicle_id, valid_from, valid_to]
       properties:
+        status:
+          type: string
+          description: статус полиса
+          example:  [draft, pending, active, expired, cancelled]
+        policy_type:
+          type: string
+          enum: [OSAGO, KASKO]
+          description: тип полиса
+          example: OSAGO
+        policyholder_id:
+          type: string
+          format: uuid
+          minLength: 36
+          maxLength: 36
+          description: уникальный идентификатор страхователя
+          example: "550e8400-e29b-41d4-a716-446655440000457"
         drivers_list:
           type: array
           minItems: 1
           items:
             $ref: "#/components/schemas/driver"  
-        update_at:
+        vehicle_id:
           type: string
-          description: дата и время внесения изменений
+          format: uuid
+          minLength: 36
+          maxLength: 36
+          description: уникальный идентификатор ТС
+          example: "550e8400-e29b-41d4-a716-446655440000458"
+        valid_from:
+          type: string
+          description: дата начала действия полиса
+          format: date
+          example: "2025-09-01"
+        valid_to:
+          type: string
+          description: дата окончания действия полиса 
+          format: date
+          example: "2025-09-01"
+        created_at:
+          type: string
+          description: дата и время создания записи
           format: date-time
           example: "2025-09-01T15:00:00+01:00"   
     policies:
@@ -550,6 +620,7 @@ components:
         $ref: "#/components/schemas/policy"
     driver:
       type: object
+      additionalProperties: false
       required:
         - full_name
         - license_number
@@ -557,10 +628,14 @@ components:
       properties:
         full_name:
           type: string
+          minLength: 1
+          maxLength: 200
           description: ФИО водителя
           example: "Иванов Иван Иванович"
         license_number:
           type: string
+          minLength: 10
+          maxLength: 12
           description: Номер водительского удостоверения
           example: "99 12 345678"
         license_issue_date:
@@ -575,30 +650,16 @@ components:
           example: "1985-03-10"
         experience_years:
           type: integer
+          minimum: 0
+          maximum: 70
           description: Стаж вождения (лет)
           example: 10
 
-    form:
-     type: object
-     properties:
-      name:
-       type: string
-       description: Имя поля 
-      type:
-       type: string
-       enum: [string, number, date, choice]
-       description: Тип поля
-      isRequired:
-       type: boolean
-       description: обязательность поля для заполнения
-      options:
-       type: array
-       items:
-        type: string
-       description: Варианты для type
+    
 
     error:
       type: object
+      additionalProperties: false
       required: 
         - code
         - message
@@ -619,6 +680,7 @@ components:
             
     link:
       type: object
+      additionalProperties: false
       properties:
         href:
           type: string
@@ -630,54 +692,59 @@ components:
         title:
           type: string
           description: название ссылки
+        rel:
+          type: string
+          description: Тип ссылки (self, next, prev, submit, pay, cancel, policies и т.д.)  Используется для идентификации ссылки в массиве  
       required:
         - href 
+        - rel
+      example:
+      - href: "/policies"
+        method: "GET"
+        title: "Список моих полисов"
+        rel: "policies"
+      - href: "/policies"
+        method: "POST"
+        title: "Отправить заявку"
+        rel: "submit"
  
-    policyFormResponse:
-      type: object
-      properties:
-        fields:
-          type: array
-          items:
-            $ref: "#/components/schemas/form"
-          description: Список полей формы  
-        _links:
-          type: object
-          properties:
-            self:
-              $ref: "#/components/schemas/link"
-            policies:
-              $ref: "#/components/schemas/link"
-            submit:
-              $ref: "#/components/schemas/link"
-
+   
     policyCreatedResponse:
       type: object
       properties:
        policy:
           $ref: "#/components/schemas/policy"
        _links:
-          type: object
-          properties:
-            self:
-              $ref: "#/components/schemas/link"
-            pay:
-              $ref: "#/components/schemas/link"
-            cancel:
-              $ref: "#/components/schemas/link"
+          type: array
+          items:
+            $ref: "#/components/schemas/link"
+          description: Ссылки для навигации
 
     policiesListResponse:
       type: object
       properties:
-       policy:
-          $ref: "#/components/schemas/policies"
-       _links:
-          type: object
-          properties:
-            self:
-              $ref: "#/components/schemas/link"
-            policy_id:
-              $ref: "#/components/schemas/link"   
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/policies"
+          description: Массив полисов на текущей странице
+        total:
+          type: integer
+          description: Общее количество полисов (без учёта пагинации)
+          example: 150
+        limit:
+          type: integer
+          description: Количество записей на странице (копия из запроса)
+          example: 20
+        offset:
+          type: integer
+          description: Смещение от начала (копия из запроса)
+          example: 40
+        _links:
+          type: array
+          items:
+            $ref: "#/components/schemas/link"
+          description: Ссылки для навигации   
 
     policy_idResponse:
       type: object
@@ -685,12 +752,10 @@ components:
        policy:
           $ref: "#/components/schemas/policy"
        _links:
-          type: object
-          properties:
-            self:
-              $ref: "#/components/schemas/link"
-            update:
-              $ref: "#/components/schemas/link"       
+          type: array
+          items:
+            $ref: "#/components/schemas/link"
+          description: Ссылки для навигации      
 
     policyUpdateResponse:
       type: object
@@ -698,20 +763,9 @@ components:
        policy:
           $ref: "#/components/schemas/policyUpdate"
        _links:
-          type: object
-          properties:
-            self:
-              $ref: "#/components/schemas/link"
-            policies:
-              $ref: "#/components/schemas/link"       
+          type: array
+          items:
+            $ref: "#/components/schemas/link"
+          description: Ссылки для навигации      
 
-    policyDeleteResponse:
-      type: object
-      properties:
-       _links:
-          type: object
-          properties:
-            self:
-              $ref: "#/components/schemas/link"
-            form:
-              $ref: "#/components/schemas/link"                        
+                        
