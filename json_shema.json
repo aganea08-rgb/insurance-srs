@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "policiesListResponse": {
+      "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "policy_id",
+            "status",
+            "policy_type",
+            "policyholder_id",
+            "drivers_list",
+            "vehicle_id",
+            "valid_from",
+            "valid_to"
+          ],
+          "properties": {
+            "policy_id": {
+              "type": "string",
+              "format": "uuid",
+              "minLength": 36,
+              "maxLength": 36,
+              "description": "уникальный идентификатор полиса",
+              "examples": ["550e8400-e29b-41d4-a716-446655440000"]
+            },
+            "status": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 20,
+              "enum": ["draft", "pending", "active", "expired", "cancelled"],
+              "description": "статус полиса",
+              "examples": ["pending"]
+            },
+            "policy_type": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10,
+              "enum": ["OSAGO", "KASKO"],
+              "description": "тип полиса",
+              "examples": ["OSAGO"]
+            },
+            "policyholder_id": {
+              "type": "string",
+              "format": "uuid",
+              "minLength": 36,
+              "maxLength": 36,
+              "description": "уникальный идентификатор страхователя",
+              "examples": ["550e8400-e29b-41d4-a716-446655440000"]
+            },
+            "vehicle_id": {
+              "type": "string",
+              "format": "uuid",
+              "minLength": 36,
+              "maxLength": 36,
+              "description": "уникальный идентификатор ТС",
+              "examples": ["550e8400-e29b-41d4-a716-446655440000"]
+            },
+            "drivers_list": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["full_name", "license_number", "birth_date"],
+                "properties": {
+                  "full_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "ФИО водителя",
+                    "examples": ["Иванов Иван Иванович"]
+                  },
+                  "license_number": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 12,
+                    "description": "Номер водительского удостоверения",
+                    "examples": ["99 12 345678"]
+                  },
+                  "license_issue_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Дата выдачи ВУ",
+                    "examples": ["2020-05-15"]
+                  },
+                  "birth_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Дата рождения",
+                    "examples": ["1985-03-10"]
+                  },
+                  "experience_years": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 70,
+                    "description": "Стаж вождения (лет)",
+                    "examples": [10]
+                  }
+                }
+              }
+            },
+            "valid_from": {
+              "type": "string",
+              "format": "date",
+              "description": "дата начала действия полиса",
+              "examples": ["2025-09-01"]
+            },
+            "valid_to": {
+              "type": "string",
+              "format": "date",
+              "description": "дата окончания действия полиса",
+              "examples": ["2026-08-31"]
+            }
+          }
+        }
+      },
+      "total": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Общее количество полисов (без учёта пагинации)",
+        "examples": [150]
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "description": "Количество записей на странице (копия из запроса)",
+        "examples": [20]
+      },
+      "offset": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Смещение от начала (копия из запроса)",
+        "examples": [40]
+      },
+      "_links": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["href", "rel"],
+          "properties": {
+            "href": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255,
+              "description": "URL для перехода",
+              "examples": ["/policies?limit=20&offset=0"]
+            },
+            "method": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10,
+              "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+              "description": "HTTP-метод",
+              "examples": ["GET"]
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255,
+              "description": "название ссылки",
+              "examples": ["Следующая страница"]
+            },
+            "rel": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10,
+              "description": "Тип ссылки (self, next, prev, submit, pay, cancel, policies и т.д.)",
+              "examples": ["next"]
+            }
+          }
+        },
+        "description": "Ссылки для навигации"
+      }
+    },
+    "required": ["items", "total", "limit", "offset"]
+  
+    
+    }
+  }
+}
