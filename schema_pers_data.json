@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "personalData ": {
+      "type": "object",
+    "additionalProperties": false,
+    "properties": {
+
+      "birthDate": {
+       "type": "string",
+       "format": "date",
+       "description": "Дата рождения",
+       "examples": ["1985-03-10"]
+      },
+
+      "passportData": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "client_id",
+            "namber",
+            "issuedBy",
+            "unitCode",
+            "dateOfIssue",
+            ],
+            "properties": {
+            "client_id": {
+              "type": "string",
+              "format": "uuid",
+              "minLength": 36,
+              "maxLength": 36,
+              "description": "уникальный идентификатор клиента",
+              "examples": ["550e8400-e29b-41d4-a716-446655440000"]
+             },
+             "namber":{
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 12,
+              "description": "номер паспорта",
+              "examples": [ "9208 123456"]
+              },
+              "issuedBy": {
+               "type": "object",
+               "format": "text"
+               "maxLength": 500
+               "examples": ["МВД по г. Москва"]
+              },
+              "unitCode": {
+               "type": "string",
+               "minLength": 7,
+               "maxLength": 7,
+               "description": "код подразделения",
+               "examples": [ "123-456"]
+              },
+              "dateOfIssue"{
+               "type": "string",
+               "format": "date",
+               "description": "Дата выдачи",
+               "examples": ["2006-03-10"]
+              },
+
+       
+      "phoneNumber": {
+       "type": "string",
+       "description": "номер телефона",
+       "examples": ["+79123456789"]
+      },     
+
+      "registrationAddress": {
+       "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "region",
+            "locality",
+            "street",
+            "house",
+            "dateRegistration",
+            ],
+            "properties": {
+             "region": {
+              "type": "string",
+              "format": "text"
+              "maxLength": 200,
+              "description": "регион регистрации",
+              "examples": ["Свердловская область"]
+             },
+             "locality":{
+              "type": "string",
+              "format": "text"
+              "maxLength": 200,
+              "description": "населенный пункт",
+              "examples": [ "г. Свердловск"]
+              },
+              "street": {
+               "type": "object",
+               "format": "text"
+               "maxLength": 200
+               "examples": ["ул. Московская"]
+              },
+              "house": {
+               "type": "string",
+               "format": "text"
+               "maxLength": 5,
+               "description": "номер дома",
+               "examples": [ "56а"]
+              },
+              "dateRegistration"{
+               "type": "string",
+               "format": "date",
+               "description": "Дата регистрации",
+               "examples": ["2014-03-10"]
+              }
+             },
+
+       "driverLicense": {
+        "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "namber",
+            "issuedBy",
+            "startDate",
+            "finishDate",
+            ],
+            "properties": {
+              "namber": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 12,
+              "description": "номер ВУ",
+              "examples": [ "25АВ 123456"]
+             },
+             "issuedBy":{
+              "type": "object",
+              "format": "text"
+              "maxLength": 500
+              "examples": ["МВД по г. Москва"]
+              },
+              "startDate": {
+               "type": "string",
+               "format": "date",
+               "description": "Дата начала действия",
+               "examples": ["2017-03-10"]
+              },
+              "finishDate"{
+               "type": "string",
+               "format": "date",
+               "description": "Дата окончания действия",
+               "examples": ["2027-03-10"]
+              }
+             }
+            }
