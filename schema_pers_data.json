@@ -60,8 +60,10 @@
                "format": "date",
                "description": "Дата выдачи",
                "examples": ["2006-03-10"]
-              },
-
+              }
+            }
+          }
+       },    
        
       "phoneNumber": {
        "type": "string",
@@ -115,7 +117,9 @@
                "description": "Дата регистрации",
                "examples": ["2014-03-10"]
               }
-             },
+             }
+           }
+         },  
 
        "driverLicense": {
         "type": "array",
@@ -156,3 +160,8 @@
               }
              }
             }
+          }
+        }  
+      }
+    }  
+  } 
